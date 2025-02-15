@@ -24,19 +24,19 @@ import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
 
-interface Product {
-  _id: string
-  name: string
-  category: string
-  image: string
-  rating: number
-  brand: string
-  price: number
-  originalPrice?: number
-  label?: "Hot" | "Sale" | "New"
-  stock: number
-  description: string
-}
+// interface Product {
+//   _id: string
+//   name: string
+//   category: string
+//   image: string
+//   rating: number
+//   brand: string
+//   price: number
+//   originalPrice?: number
+//   label?: "Hot" | "Sale" | "New"
+//   stock: number
+//   description: string
+// }
 
 export default function ProductDetails() {
   const params = useParams()
