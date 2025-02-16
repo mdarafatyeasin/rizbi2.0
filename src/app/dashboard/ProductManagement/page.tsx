@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Image from "next/image";
+import { Id } from "../../../../convex/_generated/dataModel";
 
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,7 +46,7 @@ export default function Dashboard() {
 
   const handleConfirmDelete = async () => {
     if (deleteConfirmation.productId) {
-      await deleteProduct({ productID: deleteConfirmation.productId });
+      await deleteProduct({ productID: deleteConfirmation.productId as Id<"products"> });
       setDeleteConfirmation({ isOpen: false, productId: null });
     }
   };

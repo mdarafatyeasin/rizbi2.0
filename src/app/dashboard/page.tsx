@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { Package, DollarSign, ShoppingCart, BarChart2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
+import { Package, DollarSign, ShoppingCart, BarChart2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import { Bar, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -13,7 +13,7 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-  Title
+  Title,
 } from "chart.js";
 import { api } from "../../../convex/_generated/api";
 
@@ -37,10 +37,13 @@ export default function Dashboard() {
     0
   );
 
-  const categoryData = products.reduce((acc, product) => {
-    acc[product.category] = (acc[product.category] || 0) + 1;
-    return acc;
-  }, {});
+  const categoryData = products.reduce<Record<string, number>>(
+    (acc, product) => {
+      acc[product.category] = (acc[product.category] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
 
   const chartData = {
     labels: Object.keys(categoryData),
@@ -84,7 +87,7 @@ export default function Dashboard() {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: "top" as const,
       },
       title: {
         display: true,
@@ -109,25 +112,35 @@ export default function Dashboard() {
               <Package className="h-4 w-4 text-gray-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-800">{totalProducts}</div>
+              <div className="text-2xl font-bold text-gray-800">
+                {totalProducts}
+              </div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Stock</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Total Stock
+              </CardTitle>
               <ShoppingCart className="h-4 w-4 text-gray-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-800">{totalStock}</div>
+              <div className="text-2xl font-bold text-gray-800">
+                {totalStock}
+              </div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Value</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Total Value
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-gray-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-800">${totalValue.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-gray-800">
+                ${totalValue.toFixed(2)}
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -138,7 +151,10 @@ export default function Dashboard() {
               <BarChart2 className="h-4 w-4 text-gray-600" />
             </CardHeader>
             <CardContent>
-              <Link href="/dashboard/ProductManagement" className="text-blue-600 hover:underline text-sm">
+              <Link
+                href="/dashboard/ProductManagement"
+                className="text-blue-600 hover:underline text-sm"
+              >
                 Go to Product Management
               </Link>
             </CardContent>
@@ -148,21 +164,49 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-800">Product Categories</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-800">
+                Product Categories
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64">
-                <Pie data={chartData} options={{...chartOptions, plugins: {...chartOptions.plugins, title: {...chartOptions.plugins.title, text: 'Product Categories'}}}} />
+                <Pie
+                  data={chartData}
+                  options={{
+                    ...chartOptions,
+                    plugins: {
+                      ...chartOptions.plugins,
+                      title: {
+                        ...chartOptions.plugins.title,
+                        text: "Product Categories",
+                      },
+                    },
+                  }}
+                />
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-800">Stock Levels</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-800">
+                Stock Levels
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64">
-                <Bar data={stockData} options={{...chartOptions, plugins: {...chartOptions.plugins, title: {...chartOptions.plugins.title, text: 'Stock Levels'}}}} />
+                <Bar
+                  data={stockData}
+                  options={{
+                    ...chartOptions,
+                    plugins: {
+                      ...chartOptions.plugins,
+                      title: {
+                        ...chartOptions.plugins.title,
+                        text: "Stock Levels",
+                      },
+                    },
+                  }}
+                />
               </div>
             </CardContent>
           </Card>

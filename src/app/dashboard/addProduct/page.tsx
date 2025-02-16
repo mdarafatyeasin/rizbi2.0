@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, ChangeEvent, FormEvent } from "react"
 import { useMutation } from "convex/react"
 import Link from "next/link"
 import { api } from "../../../../convex/_generated/api"
@@ -9,9 +9,19 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 
+interface FormData {
+  name: string
+  description: string
+  price: string
+  stock: string
+  category: string
+  image: string
+  size: string
+}
+
 export default function AddProductPage() {
   const createProduct = useMutation(api.products.createProduct)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     description: "",
     price: "",
@@ -21,12 +31,12 @@ export default function AddProductPage() {
     size: "",
   })
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const productData = {
       ...formData,
@@ -100,6 +110,7 @@ export default function AddProductPage() {
             value={formData.description}
             onChange={handleChange}
             textarea
+            required
           />
           <div className="flex justify-between items-center pt-6">
             <Link href="/products" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">
@@ -115,7 +126,27 @@ export default function AddProductPage() {
   )
 }
 
-function InputField({ label, name, type = "text", value, onChange, required, textarea = false, ...props }) {
+interface InputFieldProps {
+  label: string
+  name: string
+  type?: string
+  value: string
+  onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+  required?: boolean
+  textarea?: boolean
+  placeholder?: string
+}
+
+function InputField({
+  label,
+  name,
+  type = "text",
+  value,
+  onChange,
+  required = false,
+  textarea = false,
+  placeholder = "",
+}: InputFieldProps) {
   const Component = textarea ? Textarea : Input
 
   return (
@@ -131,9 +162,8 @@ function InputField({ label, name, type = "text", value, onChange, required, tex
         onChange={onChange}
         required={required}
         className="bg-white border-gray-300 text-black placeholder-gray-400"
-        {...props}
+        placeholder={placeholder}
       />
     </div>
   )
 }
-
