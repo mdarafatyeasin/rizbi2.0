@@ -1,13 +1,20 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useQuery, useMutation } from "convex/react"
-import { api } from "../../../../convex/_generated/api"
-import { Plus, Edit, Trash2, Search, Loader2 } from "lucide-react"
-import Link from "next/link"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,31 +24,35 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import Image from "next/image";
 
 export default function Dashboard() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; productId: string | null }>({
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    productId: string | null;
+  }>({
     isOpen: false,
     productId: null,
-  })
-  const products = useQuery(api.products.getAllProducts)
-  const deleteProduct = useMutation(api.products.deleteProduct)
+  });
+  const products = useQuery(api.products.getAllProducts);
+  const deleteProduct = useMutation(api.products.deleteProduct);
 
   const handleDeleteClick = (productId: string) => {
-    setDeleteConfirmation({ isOpen: true, productId })
-  }
+    setDeleteConfirmation({ isOpen: true, productId });
+  };
 
   const handleConfirmDelete = async () => {
     if (deleteConfirmation.productId) {
-      await deleteProduct({ productID: deleteConfirmation.productId })
-      setDeleteConfirmation({ isOpen: false, productId: null })
+      await deleteProduct({ productID: deleteConfirmation.productId });
+      setDeleteConfirmation({ isOpen: false, productId: null });
     }
-  }
+  };
 
   const handleCancelDelete = () => {
-    setDeleteConfirmation({ isOpen: false, productId: null })
-  }
+    setDeleteConfirmation({ isOpen: false, productId: null });
+  };
 
   // If products is undefined (still loading), render the loading state
   if (products === undefined) {
@@ -49,10 +60,12 @@ export default function Dashboard() {
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
-    )
+    );
   }
 
-  const filteredProducts = products.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -71,7 +84,10 @@ export default function Dashboard() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-4 py-2 rounded-md bg-white text-black border-gray-700 focus:border-gray-600 focus:ring-gray-600"
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
               </div>
             </div>
           </div>
@@ -106,19 +122,27 @@ export default function Dashboard() {
                 {filteredProducts.map((product) => (
                   <TableRow key={product._id}>
                     <TableCell>
-                      <img
+                      <Image
                         className="h-10 w-10 rounded-full object-cover"
                         src={product.image || "/placeholder.svg"}
                         alt={product.name}
+                        width={40} // Define the width
+                        height={40} // Define the height
+                        priority={false} // Only set priority=true for important images
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {product.name}
+                    </TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell>${product.price.toFixed(2)}</TableCell>
                     <TableCell>{product.stock}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
-                        <Link href={`/dashboard/ProductManagement/edit/${product._id}`} passHref>
+                        <Link
+                          href={`/dashboard/ProductManagement/edit/${product._id}`}
+                          passHref
+                        >
                           <Button variant="outline" size="sm">
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
@@ -143,21 +167,30 @@ export default function Dashboard() {
         </div>
       </main>
 
-      <AlertDialog open={deleteConfirmation.isOpen} onOpenChange={handleCancelDelete}>
+      <AlertDialog
+        open={deleteConfirmation.isOpen}
+        onOpenChange={handleCancelDelete}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Are you sure you want to delete this product?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the product from our servers.
+              This action cannot be undone. This will permanently delete the
+              product from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelDelete}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogCancel onClick={handleCancelDelete}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }
-

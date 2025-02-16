@@ -8,16 +8,25 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { api } from "../../convex/_generated/api"
 
+interface Product {
+  _id: string
+  name: string
+  price: number
+  category: string
+  stock: number
+  image?: string
+}
+
 interface EditProductModalProps {
   isOpen: boolean
   onClose: () => void
-  product: any
+  product: Product | null
   onProductUpdated: () => void
 }
 
 export function EditProductModal({ isOpen, onClose, product, onProductUpdated }: EditProductModalProps) {
   const updateProduct = useMutation(api.products.updateProduct)
-  const [editedProduct, setEditedProduct] = useState(product)
+  const [editedProduct, setEditedProduct] = useState<Product | null>(product)
   const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
@@ -64,7 +73,7 @@ export function EditProductModal({ isOpen, onClose, product, onProductUpdated }:
               id="name"
               className="col-span-3"
               value={editedProduct?.name || ""}
-              onChange={(e) => setEditedProduct({ ...editedProduct, name: e.target.value })}
+              onChange={(e) => setEditedProduct((prev) => prev ? { ...prev, name: e.target.value } : null)}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -76,7 +85,7 @@ export function EditProductModal({ isOpen, onClose, product, onProductUpdated }:
               type="number"
               className="col-span-3"
               value={editedProduct?.price || 0}
-              onChange={(e) => setEditedProduct({ ...editedProduct, price: Number(e.target.value) })}
+              onChange={(e) => setEditedProduct((prev) => prev ? { ...prev, price: Number(e.target.value) } : null)}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -87,7 +96,7 @@ export function EditProductModal({ isOpen, onClose, product, onProductUpdated }:
               id="category"
               className="col-span-3"
               value={editedProduct?.category || ""}
-              onChange={(e) => setEditedProduct({ ...editedProduct, category: e.target.value })}
+              onChange={(e) => setEditedProduct((prev) => prev ? { ...prev, category: e.target.value } : null)}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -99,7 +108,7 @@ export function EditProductModal({ isOpen, onClose, product, onProductUpdated }:
               type="number"
               className="col-span-3"
               value={editedProduct?.stock || 0}
-              onChange={(e) => setEditedProduct({ ...editedProduct, stock: Number(e.target.value) })}
+              onChange={(e) => setEditedProduct((prev) => prev ? { ...prev, stock: Number(e.target.value) } : null)}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -110,7 +119,7 @@ export function EditProductModal({ isOpen, onClose, product, onProductUpdated }:
               id="image"
               className="col-span-3"
               value={editedProduct?.image || ""}
-              onChange={(e) => setEditedProduct({ ...editedProduct, image: e.target.value })}
+              onChange={(e) => setEditedProduct((prev) => prev ? { ...prev, image: e.target.value } : null)}
             />
           </div>
         </div>
@@ -123,4 +132,3 @@ export function EditProductModal({ isOpen, onClose, product, onProductUpdated }:
     </Dialog>
   )
 }
-
