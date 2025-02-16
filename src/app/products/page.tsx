@@ -2,7 +2,6 @@
 
 import { useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
-import { Star } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
@@ -14,8 +13,6 @@ interface Product {
   name: string
   category: string
   image: string
-  rating: number
-  brand: string
   price: number
   originalPrice?: number
   label?: "Hot" | "Sale" | "New"
@@ -81,24 +78,6 @@ function ProductCard({ product }: { product: Product }) {
         <h3 className="font-medium text-sm text-gray-900 line-clamp-2">
           {product.name}
         </h3>
-
-        {/* Rating */}
-        <div className="flex items-center gap-1">
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                size={12}
-                className={`${
-                  i < Math.floor(product.rating)
-                    ? "fill-yellow-400 text-yellow-400"
-                    : "fill-gray-200 text-gray-200"
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-gray-500">({product.rating})</span>
-        </div>
 
         {/* Price & Buy Now */}
         <div className="flex items-center justify-between pt-1">
