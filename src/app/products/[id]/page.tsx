@@ -5,9 +5,9 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
-import { Star, ArrowLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+// import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -23,6 +23,7 @@ import { Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
+import { Id } from "../../../../convex/_generated/dataModel"
 
 // interface Product {
 //   _id: string
@@ -41,7 +42,7 @@ import toast, { Toaster } from "react-hot-toast"
 export default function ProductDetails() {
   const params = useParams()
   const router = useRouter()
-  const productId = params.id as string
+  const productId = params.id as Id<"products">
   const product = useQuery(api.products.getProductById, { productID: productId })
   const createOrder = useMutation(api.orders.createOrder)
 
@@ -71,11 +72,11 @@ export default function ProductDetails() {
     return <div>Product not found</div>
   }
 
-  const labelVariants = {
-    Hot: "bg-red-500",
-    Sale: "bg-blue-500",
-    New: "bg-green-500",
-  }
+  // const labelVariants = {
+  //   Hot: "bg-red-500",
+  //   Sale: "bg-blue-500",
+  //   New: "bg-green-500",
+  // }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -124,13 +125,13 @@ export default function ProductDetails() {
       </Link>
       <div className="grid md:grid-cols-2 gap-8">
         <div className="relative aspect-square">
-          {product.label && (
+          {/* {product.label && (
             <Badge
               className={`absolute top-2 left-2 z-10 ${labelVariants[product.label as keyof typeof labelVariants]}`}
             >
               {product.label}
             </Badge>
-          )}
+          )} */}
           <Image
             src={product.image || "/placeholder.svg"}
             alt={product.name}
@@ -141,7 +142,7 @@ export default function ProductDetails() {
         <div className="space-y-4">
           <h1 className="text-3xl font-bold">{product.name}</h1>
           <div className="flex items-center gap-2">
-            <div className="flex">
+            {/* <div className="flex">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
@@ -151,19 +152,19 @@ export default function ProductDetails() {
                   }`}
                 />
               ))}
-            </div>
+            </div> */}
             <span className="text-gray-500">({product.rating})</span>
           </div>
           <div className="text-2xl font-bold">${product.price.toFixed(2)}</div>
-          {product.originalPrice && (
-            <div className="text-lg text-gray-500 line-through">${product.originalPrice.toFixed(2)}</div>
+          {product.price && (
+            <div className="text-lg text-gray-500 line-through">${product.price.toFixed(2)}</div>
           )}
           <p className="text-gray-700">{product.description}</p>
           <div>
             <span className="font-semibold">Category:</span> {product.category}
           </div>
           <div>
-            <span className="font-semibold">Brand:</span> {product.brand}
+            <span className="font-semibold">Brand:</span> {product.category}
           </div>
           <div>
             <span className="font-semibold">In Stock:</span> {product.stock}
@@ -251,4 +252,3 @@ export default function ProductDetails() {
     </div>
   )
 }
-
