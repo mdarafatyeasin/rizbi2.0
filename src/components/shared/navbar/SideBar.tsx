@@ -1,65 +1,79 @@
 "use client";
-
-import * as React from "react";
 import {
   Home,
   FolderIcon as FolderVideo,
   FileVideo,
-  Plus,
+  Settings,
+  LogOut,
 } from "lucide-react";
-
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
-
 export function ApplicationSidebar() {
+  const pathname = usePathname();
+
+  const menuItems = [
+    { icon: Home, label: "Home", href: "/dashboard" },
+    { icon: FolderVideo, label: "Add Product", href: "/dashboard/addProduct" },
+    {
+      icon: FileVideo,
+      label: "Product Management",
+      href: "/dashboard/ProductManagement",
+    },
+    { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+  ];
+
   return (
-    <Sidebar className="border-r" style={{ paddingTop: "80px" }}>
-      <SidebarContent>
-        <div className="space-y-4 px-2 py-3">
-          <Button className="w-full bg-[#7559FF] text-white hover:bg-[#7559FF]/90">
-            <Plus className="mr-2 h-4 w-4" />
-            Create video
-          </Button>
-          <Button variant="outline" className="w-full">
-            💎100
-          </Button>
-        </div>
+    <Sidebar className="border-r border-gray-800" collapsible="icon">
+      <SidebarHeader className=" bg-gradient-to-r from-gray-900 to-gray-800 p-4">
+        <Link href="/" className="flex items-center space-x-2 mt-20"></Link>
+      </SidebarHeader>
+      <SidebarContent className="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Home className="mr-2 h-4 w-4" />
-              <Link href="/dashboard">Home</Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <FolderVideo className="mr-2 h-4 w-4" />
-              <Link href="/dashboard/addProduct">Add Product</Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <FileVideo className="mr-2 h-4 w-4" />
-              <Link href="/dashboard/ProductManagement">Product Management</Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {menuItems.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href}
+                className="transition-all duration-200 hover:bg-gray-700"
+              >
+                <Link
+                  href={item.href}
+                  className="flex items-center space-x-2 px-4 py-3"
+                >
+                  <item.icon className="h-5 w-5 text-gray-400" />
+                  <span className="text-gray-300">{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="border-t p-4">
-        <Button variant="outline" className="w-full">
-          Pricing
+      <SidebarFooter className="bg-gray-900 border-t border-gray-800 p-4">
+        <Button
+          variant="outline"
+          className="w-full mb-4 bg-blue-600 text-white hover:bg-blue-700 border-none"
+        >
+          Upgrade to Pro
         </Button>
-        <div className="mt-4"></div>
+        <Button
+          variant="ghost"
+          className="w-full text-gray-400 hover:text-white hover:bg-gray-800"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );

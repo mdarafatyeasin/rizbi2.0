@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/shared/navbar/Navbar";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "./ConvexClientProvider";
+import Footer from "../components/shared/footer/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
             <main>
               <Navbar />
               {children}
+              <Footer/>
             </main>
           </ClerkProvider>
         </ConvexClientProvider>
