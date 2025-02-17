@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
 import type { Id } from "../../../../convex/_generated/dataModel"
-import { Loader2, Search, Trash2, Eye, Package, Truck, CheckCircle, XCircle } from "lucide-react"
+import { Loader2, Search, Trash2, Eye, Package, Truck, CheckCircle, XCircle, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -91,7 +91,7 @@ export default function AdminOrdersPage() {
   const getStatusIcon = (status: Order["status"]) => {
     switch (status) {
       case "pending":
-        return <Package className="h-5 w-5 text-yellow-500" />
+        return <Clock className="h-5 w-5 text-yellow-500" />
       case "shipped":
         return <Truck className="h-5 w-5 text-blue-500" />
       case "delivered":
@@ -104,7 +104,7 @@ export default function AdminOrdersPage() {
   if (!allOrders) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-800" />
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     )
   }
@@ -123,7 +123,7 @@ export default function AdminOrdersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <Package className="h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{orders.length}</div>
@@ -132,7 +132,7 @@ export default function AdminOrdersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
-            <Package className="h-4 w-4 text-yellow-500" />
+            <Package className="h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{orders.filter((order) => order.status === "pending").length}</div>
@@ -141,7 +141,7 @@ export default function AdminOrdersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Shipped Orders</CardTitle>
-            <Truck className="h-4 w-4 text-blue-500" />
+            <Truck className="h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{orders.filter((order) => order.status === "shipped").length}</div>
@@ -150,7 +150,7 @@ export default function AdminOrdersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Delivered Orders</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CheckCircle className="h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{orders.filter((order) => order.status === "delivered").length}</div>
@@ -188,7 +188,7 @@ export default function AdminOrdersPage() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="bg-white shadow-md rounded-lg overflow-hidden"
+        className="bg-white shadow-md rounded-lg overflow-hidden dark:bg-gray-800"
       >
         <Table>
           <TableHeader>
@@ -222,13 +222,11 @@ export default function AdminOrdersPage() {
                         <SelectValue>
                           <Badge
                             variant={
-                                order.status === "pending"
-                                ? "secondary" // Change "warning" to "secondary"
-                                : order.status === "shipped"
+                              order.status === "canceled"
+                                ? "destructive"
+                                : order.status === "delivered"
                                   ? "default"
-                                  : order.status === "delivered"
-                                    ? "outline" // Change "success" to "outline"
-                                    : "destructive"
+                                  : "outline"
                             }
                             className="flex items-center space-x-1"
                           >
@@ -248,7 +246,7 @@ export default function AdminOrdersPage() {
                   <TableCell>
                     <div className="flex space-x-2">
                       <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
-                        <Eye className="h-5 w-5 text-blue-500" />
+                        <Eye className="h-5 w-5" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -258,7 +256,7 @@ export default function AdminOrdersPage() {
                           setIsDeleteDialogOpen(true)
                         }}
                       >
-                        <Trash2 className="h-5 w-5 text-red-500" />
+                        <Trash2 className="h-5 w-5" />
                       </Button>
                     </div>
                   </TableCell>
@@ -289,160 +287,89 @@ export default function AdminOrdersPage() {
       </Dialog>
 
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className="sm:max-w-[800px] p-6">
           <DialogHeader>
-            <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Order Details
-            </DialogTitle>
+            <DialogTitle className="text-2xl font-bold mb-4">Order Details</DialogTitle>
           </DialogHeader>
           {selectedOrder && (
             <div className="grid gap-6">
-              <div className="grid grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-blue-600">Customer Information</CardTitle>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="shadow-md">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold">Customer Information</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <motion.p
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                      className="mb-2"
-                    >
-                      <span className="font-medium text-gray-700">Name:</span>{" "}
-                      <span className="text-gray-900">{selectedOrder.customerName}</span>
-                    </motion.p>
-                    <motion.p
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="mb-2"
-                    >
-                      <span className="font-medium text-gray-700">Phone:</span>{" "}
-                      <span className="text-gray-900">{selectedOrder.phoneNumber}</span>
-                    </motion.p>
-                    <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                      <span className="font-medium text-gray-700">Address:</span>{" "}
-                      <span className="text-gray-900">{selectedOrder.address}</span>
-                    </motion.p>
+                  <CardContent className="space-y-2 pt-2">
+                    <div className="flex justify-between border-b pb-1">
+                      <span className="font-medium text-gray-600">Name:</span>
+                      <span>{selectedOrder.customerName}</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-1">
+                      <span className="font-medium text-gray-600">Phone:</span>
+                      <span>{selectedOrder.phoneNumber}</span>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <span className="font-medium text-gray-600">Address:</span>
+                      <span className="text-right">{selectedOrder.address}</span>
+                    </div>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-blue-600">Order Information</CardTitle>
+                <Card className="shadow-md">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold">Order Information</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <motion.p
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                      className="mb-2"
-                    >
-                      <span className="font-medium text-gray-700">Order ID:</span>{" "}
-                      <span className="text-gray-900">{selectedOrder._id}</span>
-                    </motion.p>
-                    <motion.p
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="mb-2"
-                    >
-                      <span className="font-medium text-gray-700">Status:</span>{" "}
-                      <Badge
-                        variant={
-                          selectedOrder.status === "pending"
-                            ? "warning"
-                            : selectedOrder.status === "shipped"
-                              ? "default"
-                              : selectedOrder.status === "delivered"
-                                ? "success"
-                                : "destructive"
-                        }
-                        className="ml-1"
-                      >
+                  <CardContent className="space-y-2 pt-2">
+                    <div className="flex justify-between border-b pb-1">
+                      <span className="font-medium text-gray-600">Order ID:</span>
+                      <span>{selectedOrder._id}</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-1">
+                      <span className="font-medium text-gray-600">Status:</span>
+                      <Badge variant="outline" className="ml-1">
                         {selectedOrder.status}
                       </Badge>
-                    </motion.p>
-                    <motion.p
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                      className="mb-2"
-                    >
-                      <span className="font-medium text-gray-700">Quantity:</span>{" "}
-                      <span className="text-gray-900">{selectedOrder.quantity}</span>
-                    </motion.p>
-                    <motion.p
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
-                      className="mb-2"
-                    >
-                      <span className="font-medium text-gray-700">Total Amount:</span>{" "}
-                      <span className="text-gray-900">${selectedOrder.totalAmount.toFixed(2)}</span>
-                    </motion.p>
-                    <motion.p
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
-                      className="mb-2"
-                    >
-                      <span className="font-medium text-gray-700">Created At:</span>{" "}
-                      <span className="text-gray-900">{new Date(selectedOrder.createdAt).toLocaleString()}</span>
-                    </motion.p>
+                    </div>
+                    <div className="flex justify-between border-b pb-1">
+                      <span className="font-medium text-gray-600">Quantity:</span>
+                      <span>{selectedOrder.quantity}</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-1">
+                      <span className="font-medium text-gray-600">Total Amount:</span>
+                      <span>${selectedOrder.totalAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-1">
+                      <span className="font-medium text-gray-600">Created At:</span>
+                      <span>{new Date(selectedOrder.createdAt).toLocaleString()}</span>
+                    </div>
                     {selectedOrder.updatedAt && (
-                      <motion.p
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                      >
-                        <span className="font-medium text-gray-700">Updated At:</span>{" "}
-                        <span className="text-gray-900">{new Date(selectedOrder.updatedAt).toLocaleString()}</span>
-                      </motion.p>
+                      <div className="flex justify-between">
+                        <span className="font-medium text-gray-600">Updated At:</span>
+                        <span>{new Date(selectedOrder.updatedAt).toLocaleString()}</span>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
               </div>
               {product && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-blue-600">Product Information</CardTitle>
+                <Card className="shadow-md">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold">Product Information</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-2">
                     <div className="flex items-start space-x-4">
                       <Image
                         src={product.image || "/placeholder.svg"}
                         alt={product.name}
-                        width={100}
-                        height={100}
+                        width={120}
+                        height={120}
                         className="rounded-md object-cover"
                       />
-                      <div>
-                        <motion.p
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 }}
-                          className="font-medium text-lg text-gray-900 mb-2"
-                        >
-                          {product.name}
-                        </motion.p>
-                        <motion.p
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                          className="mb-2"
-                        >
-                          <span className="font-medium text-gray-700">Price:</span>{" "}
-                          <span className="text-gray-900">${product.price.toFixed(2)}</span>
-                        </motion.p>
-                        <motion.p
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 }}
-                          className="text-sm text-gray-600"
-                        >
-                          {product.description}
-                        </motion.p>
+                      <div className="flex-1 space-y-2">
+                        <div className="font-medium text-lg">{product.name}</div>
+                        <div className="flex justify-between border-b pb-1">
+                          <span className="font-medium text-gray-600">Price:</span>
+                          <span>${product.price.toFixed(2)}</span>
+                        </div>
+                        <div className="text-sm text-gray-600">{product.description}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -450,7 +377,7 @@ export default function AdminOrdersPage() {
               )}
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="mt-6">
             <Button variant="outline" onClick={() => setSelectedOrder(null)}>
               Close
             </Button>
@@ -460,3 +387,4 @@ export default function AdminOrdersPage() {
     </div>
   )
 }
+
