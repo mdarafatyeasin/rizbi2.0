@@ -31,6 +31,11 @@ export function ApplicationSidebar() {
       label: "Product Management",
       href: "/dashboard/ProductManagement",
     },
+    {
+      icon: FileVideo,
+      label: "Orders",
+      href: "/dashboard/orders",
+    },
     { icon: Settings, label: "Settings", href: "/dashboard/settings" },
   ];
 

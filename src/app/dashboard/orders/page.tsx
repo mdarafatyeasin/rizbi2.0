@@ -1,0 +1,462 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useQuery, useMutation } from "convex/react"
+import { api } from "../../../../convex/_generated/api"
+import type { Id } from "../../../../convex/_generated/dataModel"
+import { Loader2, Search, Trash2, Eye, Package, Truck, CheckCircle, XCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { toast, Toaster } from "react-hot-toast"
+import { motion, AnimatePresence } from "framer-motion"
+import Image from "next/image"
+
+type Order = {
+  _id: Id<"orders">
+  customerName: string
+  phoneNumber: string
+  address: string
+  productID: Id<"products">
+  quantity: number
+  totalAmount: number
+  status: "pending" | "shipped" | "delivered" | "canceled"
+  createdAt: number
+  updatedAt?: number
+}
+
+export default function AdminOrdersPage() {
+  const allOrders = useQuery(api.orders.getAllOrders)
+  const updateOrderStatus = useMutation(api.orders.updateOrderStatus)
+  const deleteOrder = useMutation(api.orders.deleteOrder)
+
+  const [orders, setOrders] = useState<Order[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<Order["status"] | "all">("all")
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [orderToDelete, setOrderToDelete] = useState<Id<"orders"> | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+
+  const product = useQuery(api.products.getProductById, selectedOrder ? { productID: selectedOrder.productID } : "skip")
+
+  useEffect(() => {
+    if (allOrders) {
+      setOrders(allOrders)
+    }
+  }, [allOrders])
+
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch =
+      order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) || order.phoneNumber.includes(searchTerm)
+    const matchesStatus = statusFilter === "all" || order.status === statusFilter
+    return matchesSearch && matchesStatus
+  })
+
+  const handleStatusChange = async (orderId: Id<"orders">, newStatus: Order["status"]) => {
+    try {
+      await updateOrderStatus({ orderID: orderId, status: newStatus })
+      setOrders(orders.map((order) => (order._id === orderId ? { ...order, status: newStatus } : order)))
+      toast.success("Order status updated successfully")
+    } catch (error) {
+      console.error("Error updating order status:", error)
+      toast.error("Failed to update order status")
+    }
+  }
+
+  const handleDeleteOrder = async () => {
+    if (orderToDelete) {
+      try {
+        await deleteOrder({ orderID: orderToDelete })
+        setOrders(orders.filter((order) => order._id !== orderToDelete))
+        toast.success("Order deleted successfully")
+        setIsDeleteDialogOpen(false)
+      } catch (error) {
+        console.error("Error deleting order:", error)
+        toast.error("Failed to delete order")
+      }
+    }
+  }
+
+  const getStatusIcon = (status: Order["status"]) => {
+    switch (status) {
+      case "pending":
+        return <Package className="h-5 w-5 text-yellow-500" />
+      case "shipped":
+        return <Truck className="h-5 w-5 text-blue-500" />
+      case "delivered":
+        return <CheckCircle className="h-5 w-5 text-green-500" />
+      case "canceled":
+        return <XCircle className="h-5 w-5 text-red-500" />
+    }
+  }
+
+  if (!allOrders) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-800" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <Toaster position="top-right" />
+      <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold mb-6">
+        Order Management Dashboard
+      </motion.h1>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
+      >
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{orders.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
+            <Package className="h-4 w-4 text-yellow-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{orders.filter((order) => order.status === "pending").length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Shipped Orders</CardTitle>
+            <Truck className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{orders.filter((order) => order.status === "shipped").length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Delivered Orders</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{orders.filter((order) => order.status === "delivered").length}</div>
+          </CardContent>
+        </Card>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0 md:space-x-4"
+      >
+        <div className="relative w-full md:w-64">
+          <Input
+            type="text"
+            placeholder="Search by name or phone"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+        </div>
+        <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as Order["status"] | "all")}>
+          <SelectTrigger className="w-full md:w-48">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="shipped">Shipped</SelectItem>
+            <SelectItem value="delivered">Delivered</SelectItem>
+            <SelectItem value="canceled">Canceled</SelectItem>
+          </SelectContent>
+        </Select>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-white shadow-md rounded-lg overflow-hidden"
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Customer</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Total Amount</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <AnimatePresence>
+              {filteredOrders.map((order) => (
+                <motion.tr
+                  key={order._id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <TableCell>{order.customerName}</TableCell>
+                  <TableCell>{order.phoneNumber}</TableCell>
+                  <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Select
+                      value={order.status}
+                      onValueChange={(value) => handleStatusChange(order._id, value as Order["status"])}
+                    >
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue>
+                          <Badge
+                            variant={
+                                order.status === "pending"
+                                ? "secondary" // Change "warning" to "secondary"
+                                : order.status === "shipped"
+                                  ? "default"
+                                  : order.status === "delivered"
+                                    ? "outline" // Change "success" to "outline"
+                                    : "destructive"
+                            }
+                            className="flex items-center space-x-1"
+                          >
+                            {getStatusIcon(order.status)}
+                            <span>{order.status}</span>
+                          </Badge>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="shipped">Shipped</SelectItem>
+                        <SelectItem value="delivered">Delivered</SelectItem>
+                        <SelectItem value="canceled">Canceled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
+                        <Eye className="h-5 w-5 text-blue-500" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setOrderToDelete(order._id)
+                          setIsDeleteDialogOpen(true)
+                        }}
+                      >
+                        <Trash2 className="h-5 w-5 text-red-500" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </TableBody>
+        </Table>
+      </motion.div>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this order? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteOrder}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              Order Details
+            </DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="grid gap-6">
+              <div className="grid grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold text-blue-600">Customer Information</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <motion.p
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="mb-2"
+                    >
+                      <span className="font-medium text-gray-700">Name:</span>{" "}
+                      <span className="text-gray-900">{selectedOrder.customerName}</span>
+                    </motion.p>
+                    <motion.p
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="mb-2"
+                    >
+                      <span className="font-medium text-gray-700">Phone:</span>{" "}
+                      <span className="text-gray-900">{selectedOrder.phoneNumber}</span>
+                    </motion.p>
+                    <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                      <span className="font-medium text-gray-700">Address:</span>{" "}
+                      <span className="text-gray-900">{selectedOrder.address}</span>
+                    </motion.p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold text-blue-600">Order Information</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <motion.p
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="mb-2"
+                    >
+                      <span className="font-medium text-gray-700">Order ID:</span>{" "}
+                      <span className="text-gray-900">{selectedOrder._id}</span>
+                    </motion.p>
+                    <motion.p
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="mb-2"
+                    >
+                      <span className="font-medium text-gray-700">Status:</span>{" "}
+                      <Badge
+                        variant={
+                          selectedOrder.status === "pending"
+                            ? "warning"
+                            : selectedOrder.status === "shipped"
+                              ? "default"
+                              : selectedOrder.status === "delivered"
+                                ? "success"
+                                : "destructive"
+                        }
+                        className="ml-1"
+                      >
+                        {selectedOrder.status}
+                      </Badge>
+                    </motion.p>
+                    <motion.p
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="mb-2"
+                    >
+                      <span className="font-medium text-gray-700">Quantity:</span>{" "}
+                      <span className="text-gray-900">{selectedOrder.quantity}</span>
+                    </motion.p>
+                    <motion.p
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                      className="mb-2"
+                    >
+                      <span className="font-medium text-gray-700">Total Amount:</span>{" "}
+                      <span className="text-gray-900">${selectedOrder.totalAmount.toFixed(2)}</span>
+                    </motion.p>
+                    <motion.p
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                      className="mb-2"
+                    >
+                      <span className="font-medium text-gray-700">Created At:</span>{" "}
+                      <span className="text-gray-900">{new Date(selectedOrder.createdAt).toLocaleString()}</span>
+                    </motion.p>
+                    {selectedOrder.updatedAt && (
+                      <motion.p
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                      >
+                        <span className="font-medium text-gray-700">Updated At:</span>{" "}
+                        <span className="text-gray-900">{new Date(selectedOrder.updatedAt).toLocaleString()}</span>
+                      </motion.p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+              {product && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold text-blue-600">Product Information</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-start space-x-4">
+                      <Image
+                        src={product.image || "/placeholder.svg"}
+                        alt={product.name}
+                        width={100}
+                        height={100}
+                        className="rounded-md object-cover"
+                      />
+                      <div>
+                        <motion.p
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                          className="font-medium text-lg text-gray-900 mb-2"
+                        >
+                          {product.name}
+                        </motion.p>
+                        <motion.p
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                          className="mb-2"
+                        >
+                          <span className="font-medium text-gray-700">Price:</span>{" "}
+                          <span className="text-gray-900">${product.price.toFixed(2)}</span>
+                        </motion.p>
+                        <motion.p
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                          className="text-sm text-gray-600"
+                        >
+                          {product.description}
+                        </motion.p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedOrder(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
